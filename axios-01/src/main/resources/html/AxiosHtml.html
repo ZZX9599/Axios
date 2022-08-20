@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>测试Axios发送请求</title>
+    <script type="text/javascript" src="../js/axios.min.js"></script>
+</head>
+
+<body>
+    <script type="text/javascript">
+
+        let instance = axios.create({
+            "baseURL":'http://localhost:8080/axios'
+        });
+
+        instance.interceptors.request.use(function (config){
+            console.log("拦截器")
+            console.log(config)
+            config.url+="&token=1111"
+            return config;
+        });
+
+        instance.get("/first?id=1001").then(function (resp){
+            alert(resp.data);
+        });
+    </script>
+</body>
+</html>

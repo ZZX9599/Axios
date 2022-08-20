@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>员工信息</title>
+
+
+    <link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
+
+    <script type="text/javascript" src="../js/vue.js"></script>
+    <script type="text/javascript" src="../js/axios.min.js"></script>
+
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+
+            <!--处理标题-->
+            <div class="row">
+                <div class="col-sm-12" style="align-content: center">
+                    <h1 style="text-align: center">{{msg}}</h1>
+                </div>
+            </div>
+
+
+
+            <!--处理表格-->
+            <div class="row">
+                <div class="col-lg-12">
+                    <table width="100%" class="table table-bordered table-hover table-striped table-hover">
+                        <tr>
+                            <th>编号</th>
+                            <th>姓名</th>
+                            <th>年龄</th>
+                            <th>工资</th>
+                            <th>操作</th>
+                        </tr>
+
+                        <tr v-for="emp,index in emps" :key="emp.id" style="text-align: center" class="active">
+                            <td>{{emp.id}}</td>
+                            <td>{{emp.name}}</td>
+                            <td>{{emp.age}}</td>
+                            <td>{{emp.salary}}</td>
+                            <td><a href="" @click.prevent="delEmp(emp.id)" class="btn btn-danger btn-xs">删除</a>&nbsp;&nbsp;<a href="" @click.prevent="getById(emp.id)" class="btn bg-primary btn-xs">修改</a> </td>
+                        </tr>
+
+                    </table>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <button @click="add()" class="bg-primary btn-sm">新增员工</button>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 style="text-align: center">数据显示</h1>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <form>
+                        <div class="form-group">
+                            <div v-if="emp.id">
+                                <label>用户编号：</label>
+                                <input class="form-control" type="text" readonly v-model="emp.id">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>用户姓名：</label>
+                            <input class="form-control" type="text" v-model="emp.name">
+                        </div>
+
+                        <div class="form-group">
+                            <label>用户年龄：</label>
+                            <input class="form-control" type="text" v-model="emp.age">
+                        </div>
+
+                        <div class="form-group">
+                            <label>用户工资：</label>
+                            <input class="form-control" type="text" v-model="emp.salary">
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <button @click="saveOrEdit()" class="btn btn-primary btn-sm btn-block">保存/修改</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+<!--script脚本-->
+<script type="text/javascript">
+
+    //axios的配置
+    let instance = axios.create({
+        baseURL:'http://localhost:8080/emps',
+        timeout:5000,
+    })
+
+
+    //响应拦截器
+    instance.interceptors.response.use(function (res){
+        //成功
+        return res;
+    },function (error){
+        alert("后台失败")
+    })
+
+    let vm=new Vue({
+        el:"#app",
+        data:{
+            "msg":"员工列表",
+            "emps":[],
+            "emp":{},
+        },
+        methods:{
+            //查询所有
+            findAll(){
+                let _this=this;
+                instance.get("/list").then(res=>{
+                    this.emps=res.data;
+                    console.log(this);
+                })
+            },
+            //根据id删除信息
+            delEmp(id){
+                //提示信息
+                if(window.confirm("你确定删除吗?")) {
+                    let _this = this;
+                    instance.delete("/delete/" + id).then(function (response) {
+                        //刷新列表
+                        _this.findAll();
+                    })
+                }
+            },
+
+            saveOrEdit(){
+                if(!this.emp.name){alert("姓名不能为空");return false;}
+                console.log(this.emp);
+                let _this=this;
+                instance.post("/save",this.emp).then(function (response){
+                    alert("保存成功");
+                    _this.findAll();
+                    //清空数据
+                    _this.emp={};
+                })
+            },
+
+            getById(id){
+                let _this=this;
+                instance.get("/get/"+id).then(function (response){
+                    console.log(response.data);
+                    _this.emp=response.data;
+                })
+            },
+
+            add(){
+                this.emp={};
+            }
+        },
+        computed:{
+
+        },
+        created(){
+            this.findAll();
+        }
+    })
+</script>
+</body>
+</html>
